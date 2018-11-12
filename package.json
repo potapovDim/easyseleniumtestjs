@@ -15,5 +15,11 @@
   "bugs": {
     "url": "https://github.com/potapovDim/easyseleniumtestjs/issues"
   },
-  "homepage": "https://github.com/potapovDim/easyseleniumtestjs#readme"
+  "homepage": "https://github.com/potapovDim/easyseleniumtestjs#readme",
+  "dependencies": {
+    "node-fetch": "^2.2.1"
+  },
+  "devDependencies": {
+    "eslint": "^5.9.0"
+  }
 }

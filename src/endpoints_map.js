@@ -69,8 +69,8 @@ const endpoins = {
   frame:                        (sessionId) =>                        `session/${sessionId}/frame`,
   parentFrame:                  (sessionId) =>                        `session/${sessionId}/frame/parent`,
   orientation:                  (sessionId) =>                        `session/${sessionId}/orientation`,
-  textAllert:                   (sessionId) =>                        `session/${sessionId}/alert/text`,
-  acceptAllert:                 (sessionId) =>                        `session/${sessionId}/alert/accept`,
+  textAlert:                    (sessionId) =>                        `session/${sessionId}/alert/text`,
+  acceptAlert:                  (sessionId) =>                        `session/${sessionId}/alert/accept`,
   dismissAllert:                (sessionId) =>                        `session/${sessionId}/alert/dismiss`,
 
   touchClick:                   (sessionId) =>                        `session/${sessionId}/touch/click`,
