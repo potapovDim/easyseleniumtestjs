@@ -17,6 +17,7 @@ const endpoins = {
   // executeAsync:                 (sessionId) =>                        `session/${sessionId}/execute/async`,
   executeAsync:                 (sessionId) =>                        `session/${sessionId}/execute_async`,
   // executeSync:                  (sessionId) =>                        `session/${sessionId}/execute/sync`,
+
   executeSync:                  (sessionId) =>                        `session/${sessionId}/execute`,
   windowHandle:                 (sessionId) =>                        `session/${sessionId}/window_handle`,
   windowHandles:                (sessionId) =>                        `session/${sessionId}/window_handles`,
@@ -34,7 +35,6 @@ const endpoins = {
   windowPosition:               (sessionId, windowId) =>              `session/${sessionId}/window/${windowId}/position`,
   windowMaximize:               (sessionId, windowId) =>              `session/${sessionId}/window/${windowId}/maximize`,
   windowSize:                   (sessionId, windowId) =>              `session/${sessionId}/window/${windowId}/size`,
-
 
   element:                      (sessionId) =>                        `session/${sessionId}/element`,
   elementFromElement:           (sessionId, elementId) =>             `session/${sessionId}/element/${elementId}/element`,
@@ -71,8 +71,9 @@ const endpoins = {
   orientation:                  (sessionId) =>                        `session/${sessionId}/orientation`,
   textAlert:                    (sessionId) =>                        `session/${sessionId}/alert/text`,
   acceptAlert:                  (sessionId) =>                        `session/${sessionId}/alert/accept`,
-  dismissAllert:                (sessionId) =>                        `session/${sessionId}/alert/dismiss`,
+  dismissAlert:                 (sessionId) =>                        `session/${sessionId}/alert/dismiss`,
 
+  // touch
   touchClick:                   (sessionId) =>                        `session/${sessionId}/touch/click`,
   touchFlick:                   (sessionId) =>                        `session/${sessionId}/touch/flick`,
   touchDown:                    (sessionId) =>                        `session/${sessionId}/touch/down`,
