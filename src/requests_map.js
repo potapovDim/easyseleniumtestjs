@@ -127,7 +127,6 @@ const buildSeleniumAPI = (that, seleniumUrl) => {
       return fetchy.post({url: resolveUrl(seleniumUrl, endpoins.parentFrame(sessionId)), body: {id: null}})
     }
   }
-
   for(const key of Object.keys(requests)) {
     that[key] = requests[key]
   }

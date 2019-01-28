@@ -19,14 +19,14 @@ function findSessionIdValue(responseObj, currentId = '') {
   throw new Error('Session id was not found')
 }
 
-function findElementIdValue(responseObj, currentId = '') {
+function findElementIdValue(responseObj, currentId = '', throwErr = true) {
   const keys = Object.keys(responseObj)
 
   const sessionId = keys.reduce((acc, key) => {
     if(key === elementW3CElementID || key === 'ELEMENT') {
       acc = responseObj[key]
     } else if(typeof responseObj[key] === 'object') {
-      acc = findElementIdValue(responseObj[key], acc)
+      acc = findElementIdValue(responseObj[key], acc, throwErr)
     }
     return acc
   }, currentId)

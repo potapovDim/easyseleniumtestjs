@@ -2,17 +2,8 @@ const {buildSeleniumAPI} = require('./requests_map')
 const {findSessionIdValue, findElementIdValue} = require('./util')
 const {assertNumber, assertArray, assertFunction, assertString} = require('./is_type')
 
-const temporaryConfig = {
-  seleniumUrl: 'http://localhost:4444/wd/hub/',
-  browser: {
-    desiredCapabilities: {
-      browserName: 'chrome',
-      javascriptEnabled: true,
-      acceptSslCerts: true,
-      platform: 'ANY'
-    }
-  }
-}
+
+const sleep = (ms) => new Promise(_ => setTimeout(() => _(true), ms))
 
 class Client {
   constructor(config) {
@@ -35,12 +26,27 @@ class Client {
     return this
   }
 
+  end() {
+    this.queue.push((async () => {
+      const {sessionId} = this; await this.closeSession({sessionId})
+    }).bind(this))
+
+    return this
+  }
+
+  sleep(time = 5000) {
+    this.queue.push((async () => {
+      await sleep(time)
+    }).bind(this))
+    return this
+  }
+
   element(elementName, cssSelector) {
     this.queue.push((async () => {
       const css = {using: 'css selector', value: cssSelector}
       const {sessionId} = this
       const item = await this.getElement({sessionId, selectorObj: css})
-      this.elementsStore[elementName] = findElementIdValue(item)
+      this.elementsStore[elementName] = {}; this.elementsStore[elementName]['elementId'] = findElementIdValue(item)
     }).bind(this))
 
     return this
@@ -49,7 +55,8 @@ class Client {
   click(elementName) {
     this.queue.push((async () => {
       const {sessionId} = this
-      await this.elementClick({sessionId, elementId: this.elementsStore[elementName]})
+      const {elementId} = this.elementsStore[elementName]
+      await this.elementClick({sessionId, elementId})
     }).bind(this))
 
     return this
@@ -69,21 +76,67 @@ class Client {
     }
     this.queue.push((async () => {
       const {sessionId} = this
-      await this.elementSendKeys({sessionId, elementId: this.elementsStore[elementName], text, value})
+      const {elementId} = this.elementsStore[elementName]
+      await this.elementSendKeys({sessionId, elementId, text, value})
     }).bind(this))
 
     return this
   }
 
-  getText(elementName) {
+  getText(elementName, asserter) {
     this.queue.push((async () => {
       const {sessionId} = this
-      const item = await this.elementText({sessionId, elementId: this.elementsStore[elementName]})
-      console.log(item)
+      const {elementId} = this.elementsStore[elementName]
+      const {value} = await this.elementText({sessionId, elementId})
+
+      this.elementsStore[elementName]['text'] = value
+
+      if(asserter) {asserter(value)}
     }).bind(this))
-    // const {sessionId} = this
-    // this.elementText({sessionId, elementId: this.elementsStore[elementName]})
     return this
+  }
+
+  visible(elementName, asserter) {
+
+  }
+
+  wait(time, pollInterval = 200) {
+    return {
+      elementVisible: (elementName, cssSelector) => {
+
+        this.queue.push((async () => {
+          const css = {using: 'css selector', value: cssSelector}
+          let isVisible = false; const now = +Date.now()
+
+          let element = this.elementsStore[elementName]
+
+          const {sessionId} = this
+          if(!element) {
+            do {
+              const elementId = findElementIdValue(await this.getElement({sessionId, selectorObj: css}), '', false)
+              if(elementId) {this.elementsStore[elementName] = {}; this.elementsStore[elementName].elementId = elementId}
+              element = this.elementsStore[elementName]
+            } while((await sleep(pollInterval)) && !element && +Date.now() - now < time)
+            time = +Date.now() - now
+          }
+          const {elementId} = this.elementsStore[elementName]
+          do {
+            isVisible = await this.elementDisplayed({sessionId, elementId})
+          } while((await sleep(pollInterval)) && !isVisible && +Date.now() - now < time)
+        }).bind(this))
+        return this
+
+      },
+      elementPresents: () => {
+
+      },
+      elementCount: () => {
+
+      },
+      urlContains: () => {
+
+      }
+    }
   }
 
   go(url) {
@@ -102,17 +155,6 @@ class Client {
   }
 }
 
-const client = new Client(temporaryConfig)
-
-client
-  .init()
-
-  .go('http://google.com')
-
-  .element('googleInput', '[name="q"]')
-  .sendKeys('googleInput', 'test super test')
-
-  .element('submitButton', '.FPdoLc.VlcLAe [name="btnK"]')
-  .getText('submitButton')
-
-  .exec()
+module.exports = {
+  Client
+}
