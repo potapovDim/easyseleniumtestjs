@@ -3,7 +3,6 @@ const fetch = require('node-fetch')
 const headersDefault = {'Content-Type': 'application/json'}
 
 async function _fetchy(method, {slowTime = 0, timeout, url, body = undefined, headers = headersDefault}) {
-  console.log(url)
   // if method GET body should be undefined
   body = typeof body === 'object' ? JSON.stringify(body) : body
   // slowTime, if pause required before every request, default is 0

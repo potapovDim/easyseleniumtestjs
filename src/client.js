@@ -1,5 +1,6 @@
 const {buildSeleniumAPI} = require('./requests_map')
 const {findSessionIdValue, findElementIdValue} = require('./util')
+const {assertNumber, assertArray, assertFunction, assertString} = require('./is_type')
 
 const temporaryConfig = {
   seleniumUrl: 'http://localhost:4444/wd/hub/',
@@ -30,6 +31,7 @@ class Client {
       const item = await this.createSession({capabilities: this.capabilities})
       this.sessionId = findSessionIdValue(item)
     }).bind(this))
+
     return this
   }
 
@@ -38,10 +40,49 @@ class Client {
       const css = {using: 'css selector', value: cssSelector}
       const {sessionId} = this
       const item = await this.getElement({sessionId, selectorObj: css})
-      console.log(item)
-      const elementId = findElementIdValue(item)
-      console.log(elementId, elementName)
+      this.elementsStore[elementName] = findElementIdValue(item)
     }).bind(this))
+
+    return this
+  }
+
+  click(elementName) {
+    this.queue.push((async () => {
+      const {sessionId} = this
+      await this.elementClick({sessionId, elementId: this.elementsStore[elementName]})
+    }).bind(this))
+
+    return this
+  }
+
+  sendKeys(elementName, value) {
+    let text = ''
+    if(assertNumber(value)) {
+      text = value.toString()
+      value = value.toString().split('')
+    } else if(!assertArray(value)) {
+      text = value
+      value = value.split('')
+    } else {
+      text = value.join('')
+      value = value
+    }
+    this.queue.push((async () => {
+      const {sessionId} = this
+      await this.elementSendKeys({sessionId, elementId: this.elementsStore[elementName], text, value})
+    }).bind(this))
+
+    return this
+  }
+
+  getText(elementName) {
+    this.queue.push((async () => {
+      const {sessionId} = this
+      const item = await this.elementText({sessionId, elementId: this.elementsStore[elementName]})
+      console.log(item)
+    }).bind(this))
+    // const {sessionId} = this
+    // this.elementText({sessionId, elementId: this.elementsStore[elementName]})
     return this
   }
 
@@ -50,6 +91,7 @@ class Client {
       const {sessionId} = this
       await this.openUrl({sessionId, url})
     }).bind(this))
+
     return this
   }
 
@@ -60,13 +102,17 @@ class Client {
   }
 }
 
-const cliedn = new Client(temporaryConfig)
+const client = new Client(temporaryConfig)
 
-cliedn
+client
   .init()
+
   .go('http://google.com')
+
   .element('googleInput', '[name="q"]')
-  .element('submitButton', '[name="btnK"]')
   .sendKeys('googleInput', 'test super test')
-  .click('submitButton')
+
+  .element('submitButton', '.FPdoLc.VlcLAe [name="btnK"]')
+  .getText('submitButton')
+
   .exec()

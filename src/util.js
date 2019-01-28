@@ -23,7 +23,6 @@ function findElementIdValue(responseObj, currentId = '') {
   const keys = Object.keys(responseObj)
 
   const sessionId = keys.reduce((acc, key) => {
-    console.log(key)
     if(key === elementW3CElementID || key === 'ELEMENT') {
       acc = responseObj[key]
     } else if(typeof responseObj[key] === 'object') {
