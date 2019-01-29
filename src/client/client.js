@@ -8,13 +8,12 @@ const sleep = (ms) => new Promise(_ => setTimeout(() => _(true), ms))
 class Client {
   constructor(config) {
     const {seleniumUrl, browser} = config
-    this.capabilities = browser
     buildSeleniumAPI(this, seleniumUrl)
+    this.capabilities = browser
     this.queue = []
     this.sessionId = null
-    this.elementsStore = {
-
-    }
+    this.elementsStore = {}
+    this.workflows = {}
   }
 
   init() {
@@ -167,8 +166,6 @@ class Client {
     return this
   }
 
-
-
   visible(elementName, asserter) {
 
   }
@@ -221,10 +218,23 @@ class Client {
     return this
   }
 
+  saveWorkflow(workflowName) {
+    this.workflows[workflowName] = [...this.queue]
+
+    return this
+  }
+
+  initWorkflow(workflowName) {
+    this.queue.push(...this.workflows[workflowName])
+
+    return this
+  }
+
   async exec() {
     for(const item of this.queue) {
       await item()
     }
+    this.queue = []
   }
 }
 
