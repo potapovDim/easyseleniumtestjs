@@ -1,11 +1,16 @@
-const zlib = require('zlib')
-const fs = require('fs')
+const runner = require('./src/runner')
+const path = require('path')
 
-const gzip = zlib.createGzip()
-
-const readStream = fs.createReadStream('./package.json')
-const writeStream = fs.createWriteStream('./package.json.gz')
-
-readStream.pipe(gzip).pipe(writeStream)
-
-console.log(fs.statSync('./package.json'))
+runner({
+  specsPath: path.resolve(__dirname, './specs'),
+  browsers: {
+    chrome: {
+      desiredCapabilities: {
+        browserName: 'chrome',
+        javascriptEnabled: true,
+        acceptSslCerts: true,
+        platform: 'ANY'
+      }
+    }
+  }
+})

@@ -1,17 +1,18 @@
 const {walkSync} = require('./util')
 const {Client} = require('../client')
 
-function buildExecution(specObject, browser) {
+function buildExecution(specObject, browser, seleniumUrl) {
   const {beforeEach, afterEach, ...flows} = specObject
 
   const flow = [
     ...Object.keys(flows).map((flowname) => {
+      const client = new Client({browser, seleniumUrl})
       return async function() {
-        if(beforeEach) (await beforeEach())
+        console.log(flowname, 'FLOW STARTED')
+        if(beforeEach) (await beforeEach(client))
+        await flows[flowname](client)
 
-        await flows[flowname](new Client(browser))
-
-        if(afterEach) {await afterEach()}
+        if(afterEach) {await afterEach(client)}
       }
     })
   ]
@@ -21,9 +22,11 @@ function buildExecution(specObject, browser) {
 async function runner(config) {
   const {
     paralel = 1,
+    seleniumUrl = 'http://localhost:4444/wd/hub/',
     browsers,
     rerunCount = 1,
-    specsPath
+    specsPath,
+    intervalPoll = 100
   } = config
 
   const specs = walkSync(specsPath)
@@ -34,12 +37,13 @@ async function runner(config) {
 
   const runs = Object.keys(browsers).reduce((runArr, browser) => {
     const currentBrowserRun = specObjectArray.map((suitObject) => {
-      return buildExecution(suitObject, browser)
+      return buildExecution(suitObject, browsers[browser], seleniumUrl)
     })
-    runArr.push(...currentBrowserRun)
+    currentBrowserRun.forEach((runWithBrowser) => {
+      runArr.push(...runWithBrowser)
+    })
     return runArr
   }, [])
-
 
   async function exeRun(runs) {
     let currentSessionCount = 0
@@ -53,7 +57,8 @@ async function runner(config) {
     async function runCommandsArr(runnCommandsArr, failedArr) {
       if(maxSessionCount > currentSessionCount && runnCommandsArr.length) {
         currentSessionCount += 1
-        const result = await runArr.splice(0, 1)[0].catch(console.error)
+        const a = runArr.splice(0, 1)
+        const result = await a[0]() //.catch(console.error)
         if(result) {failedArr.push(result)}
         currentSessionCount -= 1
       }
@@ -67,9 +72,9 @@ async function runner(config) {
         if(currentSessionCount) {await sleep(2000)}
       } while(runSuits.length || currentSessionCount)
 
-      if(everyCycleCallback && typeof everyCycleCallback === 'function') {
-        try {await everyCycleCallback()} catch(e) {console.log(e)}
-      }
+      // if(everyCycleCallback && typeof everyCycleCallback === 'function') {
+      //   try {await everyCycleCallback()} catch(e) {console.log(e)}
+      // }
 
       clearInterval(asserter)
       return failedRun
@@ -80,3 +85,5 @@ async function runner(config) {
 
   await exeRun(runs)
 }
+
+module.exports = runner

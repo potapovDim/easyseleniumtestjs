@@ -21,6 +21,7 @@ async function _fetchy(method, {slowTime = 0, timeout, url, body = undefined, he
     if(response.status > 300) {throw new Error('Initial test')}
     return body
   } else {
+    console.log(url)
     if(response.status > 300) {throw new Error('Initial test')}
     return body
   }

@@ -224,9 +224,14 @@ class Client {
     return this
   }
 
+  cleanState() {
+    this.queue = []
+    this.elementsStore = {}
+    return this
+  }
+
   initWorkflow(workflowName) {
     this.queue.push(...this.workflows[workflowName])
-
     return this
   }
 
