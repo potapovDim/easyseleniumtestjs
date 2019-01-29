@@ -62,6 +62,36 @@ class Client {
     return this
   }
 
+  mouseDown(elementName) {
+    this.queue.push((async () => {
+      const {sessionId} = this
+      const {elementId} = this.elementsStore[elementName]
+      await this.mouseDown({sessionId, elementId})
+    }).bind(this))
+
+    return this
+  }
+
+  clear(elementName) {
+    this.queue.push((async () => {
+      const {sessionId} = this
+      const {elementId} = this.elementsStore[elementName]
+      await this.elementClear({sessionId, elementId})
+    }).bind(this))
+
+    return this
+  }
+
+  mouseUp(elementName) {
+    this.queue.push((async () => {
+      const {sessionId} = this
+      const {elementId} = this.elementsStore[elementName]
+      await this.mouseUp({sessionId, elementId})
+    }).bind(this))
+
+    return this
+  }
+
   sendKeys(elementName, value) {
     let text = ''
     if(assertNumber(value)) {
@@ -95,6 +125,49 @@ class Client {
     }).bind(this))
     return this
   }
+
+  back() {
+    this.queue.push((async () => {
+      const {sessionId} = this; await this.navigateBack({sessionId})
+    }).bind(this))
+    return this
+  }
+
+  forward() {
+    this.queue.push((async () => {
+      const {sessionId} = this; await this.navigateForward({sessionId})
+    }).bind(this))
+    return this
+  }
+
+  refresh() {
+    this.queue.push((async () => {
+      const {sessionId} = this; await this.refresh({sessionId})
+    }).bind(this))
+    return this
+  }
+
+  url(asserter) {
+    this.queue.push((async () => {
+      const {sessionId} = this;
+      const {value} = await this.windowUrl({sessionId})
+      this.url = value
+      if(asserter) {asserter(value)}
+    }).bind(this))
+    return this
+  }
+
+  title(asserter) {
+    this.queue.push((async () => {
+      const {sessionId} = this;
+      const {value} = await this.windowTitle({sessionId})
+      this.title = value
+      if(asserter) {asserter(value)}
+    }).bind(this))
+    return this
+  }
+
+
 
   visible(elementName, asserter) {
 

@@ -40,7 +40,7 @@ const buildSeleniumAPI = (that, seleniumUrl) => {
       return fetchy.post({url: resolveUrl(seleniumUrl, endpoins.dismissAlert(sessionId))})
     },
     windowCloseCurrent: ({sessionId}) => {
-      return fetchy.post({url: resolveUrl(seleniumUrl, endpoins.window(sessionId))})
+      return fetchy.delete({url: resolveUrl(seleniumUrl, endpoins.window(sessionId))})
     },
     windowTitle: ({sessionId}) => {
       return fetchy.get({url: resolveUrl(seleniumUrl, endpoins.title(sessionId))})

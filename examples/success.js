@@ -4,7 +4,7 @@ const temporaryConfig = {
   seleniumUrl: 'http://localhost:4444/wd/hub/',
   browser: {
     desiredCapabilities: {
-      browserName: 'firefox',
+      browserName: 'chrome',
       javascriptEnabled: true,
       acceptSslCerts: true,
       platform: 'ANY'
@@ -34,7 +34,8 @@ client
   .getText('submitButton')
 
   .click('submitButton')
-
+  .url()
+  .title()
   .sleep(5000)
 
   .end()
