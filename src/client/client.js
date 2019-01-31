@@ -14,6 +14,15 @@ class Client {
     this.sessionId = null
     this.elementsStore = {}
     this.workflows = {}
+    this.currentWorkflow
+  }
+
+  initStep(step) {
+    if(this.currentWorkflow) {
+      this.workflows[this.currentWorkflow].push(step.bind(this))
+    } else {
+      this.queue.push(step.bind(this))
+    }
   }
 
   init() {
@@ -34,6 +43,7 @@ class Client {
   }
 
   sleep(time = 5000) {
+    this.initStep()
     this.queue.push((async () => {
       await sleep(time)
     }).bind(this))
@@ -41,140 +51,163 @@ class Client {
   }
 
   element(elementName, cssSelector) {
-    this.queue.push((async () => {
+    const step = async () => {
       const css = {using: 'css selector', value: cssSelector}
       const {sessionId} = this
       const item = await this.getElement({sessionId, selectorObj: css})
       this.elementsStore[elementName] = {}; this.elementsStore[elementName]['elementId'] = findElementIdValue(item)
-    }).bind(this))
+    }
+    this.initStep(step)
 
     return this
   }
 
   click(elementName) {
-    this.queue.push((async () => {
+    const step = async () => {
       const {sessionId} = this
       const {elementId} = this.elementsStore[elementName]
       await this.elementClick({sessionId, elementId})
-    }).bind(this))
+    }
+    this.initStep(step)
 
     return this
   }
 
   mouseDown(elementName) {
-    this.queue.push((async () => {
+    const step = async () => {
       const {sessionId} = this
       const {elementId} = this.elementsStore[elementName]
       await this.mouseDown({sessionId, elementId})
-    }).bind(this))
+    }
+    this.initStep(step)
 
     return this
   }
 
   clear(elementName) {
-    this.queue.push((async () => {
+    const step = async () => {
       const {sessionId} = this
       const {elementId} = this.elementsStore[elementName]
       await this.elementClear({sessionId, elementId})
-    }).bind(this))
-
+    }
+    this.initStep(step)
     return this
   }
 
   mouseUp(elementName) {
-    this.queue.push((async () => {
+    const step = async () => {
       const {sessionId} = this
       const {elementId} = this.elementsStore[elementName]
       await this.mouseUp({sessionId, elementId})
-    }).bind(this))
+    }
+    this.initStep(step)
 
     return this
   }
 
   sendKeys(elementName, value) {
-    let text = ''
-    if(assertNumber(value)) {
-      text = value.toString()
-      value = value.toString().split('')
-    } else if(!assertArray(value)) {
-      text = value
-      value = value.split('')
-    } else {
-      text = value.join('')
-      value = value
-    }
-    this.queue.push((async () => {
+    const step = async () => {
+      let text = ''
+      if(assertNumber(value)) {
+        text = value.toString()
+        value = value.toString().split('')
+      } else if(!assertArray(value)) {
+        text = value
+        value = value.split('')
+      } else {
+        text = value.join('')
+        value = value
+      }
       const {sessionId} = this
       const {elementId} = this.elementsStore[elementName]
       await this.elementSendKeys({sessionId, elementId, text, value})
-    }).bind(this))
+    }
+    this.initStep(step)
 
     return this
   }
 
   getText(elementName, asserter) {
-    this.queue.push((async () => {
+    const step = async () => {
       const {sessionId} = this
       const {elementId} = this.elementsStore[elementName]
       const {value} = await this.elementText({sessionId, elementId})
-
       this.elementsStore[elementName]['text'] = value
-
       if(asserter) {asserter(value)}
-    }).bind(this))
+    }
+    this.initStep(step)
     return this
   }
 
   back() {
-    this.queue.push((async () => {
+    const step = async () => {
       const {sessionId} = this; await this.navigateBack({sessionId})
-    }).bind(this))
+    }
+    this.initStep(step)
     return this
   }
 
   forward() {
-    this.queue.push((async () => {
+    const step = async () => {
       const {sessionId} = this; await this.navigateForward({sessionId})
-    }).bind(this))
+    }
+    this.initStep(step)
     return this
   }
 
   refresh() {
-    this.queue.push((async () => {
+    const step = async () => {
       const {sessionId} = this; await this.refresh({sessionId})
-    }).bind(this))
+    }
+    this.initStep(step)
     return this
   }
 
   url(asserter) {
-    this.queue.push((async () => {
+    const step = async () => {
       const {sessionId} = this;
       const {value} = await this.windowUrl({sessionId})
       this.url = value
       if(asserter) {asserter(value)}
-    }).bind(this))
+    }
+    this.initStep(step)
+
     return this
   }
 
   title(asserter) {
-    this.queue.push((async () => {
+    const step = async () => {
       const {sessionId} = this;
       const {value} = await this.windowTitle({sessionId})
       this.title = value
       if(asserter) {asserter(value)}
-    }).bind(this))
+    }
+    this.initStep(step)
     return this
   }
 
   visible(elementName, asserter) {
+    const step = async () => {
+      // visible is not current here
+      const {sessionId} = this;
+      const {value} = await this.windowTitle({sessionId})
+      this.title = value
+      if(asserter) {asserter(value)}
+    }
+    this.initStep(step)
+    return this
+  }
 
+  startWorkflow(workflowName) {
+    this.currentWorkflow = workflowName
+    return this
   }
 
   wait(time, pollInterval = 200) {
     return {
       elementVisible: (elementName, cssSelector) => {
+        const step = async () => {
 
-        this.queue.push((async () => {
           const css = {using: 'css selector', value: cssSelector}
           let isVisible = false; const now = +Date.now()
 
@@ -193,7 +226,8 @@ class Client {
           do {
             isVisible = await this.elementDisplayed({sessionId, elementId})
           } while((await sleep(pollInterval)) && !isVisible && +Date.now() - now < time)
-        }).bind(this))
+        }
+        this.initStep(step)
         return this
 
       },
@@ -210,17 +244,16 @@ class Client {
   }
 
   go(url) {
-    this.queue.push((async () => {
+    const step = async () => {
       const {sessionId} = this
       await this.openUrl({sessionId, url})
-    }).bind(this))
-
+    }
+    this.initStep(step)
     return this
   }
 
   saveWorkflow(workflowName) {
-    this.workflows[workflowName] = [...this.queue]
-
+    this.currentWorkflow = null
     return this
   }
 
