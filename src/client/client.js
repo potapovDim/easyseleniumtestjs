@@ -25,6 +25,11 @@ class Client {
     }
   }
 
+  endWorkflow() {
+    this.currentWorkflow = null
+    return this
+  }
+
   init() {
     this.queue.push((async () => {
       const item = await this.createSession({capabilities: this.capabilities})
