@@ -31,27 +31,25 @@ class Client {
   }
 
   init() {
-    this.queue.push((async () => {
+    const step = async () => {
       const item = await this.createSession({capabilities: this.capabilities})
       this.sessionId = findSessionIdValue(item)
-    }).bind(this))
-
+    }
+    this.initStep(step)
     return this
   }
 
   end() {
-    this.queue.push((async () => {
+    const step = async () => {
       const {sessionId} = this; await this.closeSession({sessionId})
-    }).bind(this))
-
+    }
+    this.initStep(step)
     return this
   }
 
   sleep(time = 5000) {
-    this.initStep()
-    this.queue.push((async () => {
-      await sleep(time)
-    }).bind(this))
+    const step = async () => sleep(time)
+    this.initStep(step)
     return this
   }
 
