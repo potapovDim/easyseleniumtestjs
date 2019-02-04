@@ -9,7 +9,8 @@ class Client {
   constructor(config) {
     const {seleniumUrl, browser} = config
 
-    buildSeleniumAPI(this, seleniumUrl)
+    this.requests = buildSeleniumAPI(seleniumUrl)
+
     this.capabilities = browser
     this.queue = []
     this.sessionId = null
@@ -33,7 +34,7 @@ class Client {
 
   init() {
     const step = async () => {
-      const item = await this.createSession({capabilities: this.capabilities})
+      const item = await this.requests.createSession({capabilities: this.capabilities})
       console.log('!here!!!!!!!!!!!!!!!!!!!!')
       this.sessionId = findSessionIdValue(item)
     }
@@ -43,7 +44,7 @@ class Client {
 
   end() {
     const step = async () => {
-      const {sessionId} = this; await this.closeSession({sessionId})
+      const {sessionId} = this; await this.requests.closeSession({sessionId})
     }
     this.initStep(step)
     return this
@@ -59,7 +60,7 @@ class Client {
     const step = async () => {
       const css = {using: 'css selector', value: cssSelector}
       const {sessionId} = this
-      const item = await this.getElement({sessionId, selectorObj: css})
+      const item = await this.requests.getElement({sessionId, selectorObj: css})
       this.elementsStore[elementName] = {}; this.elementsStore[elementName]['elementId'] = findElementIdValue(item)
     }
     this.initStep(step)
@@ -71,7 +72,7 @@ class Client {
     const step = async () => {
       const {sessionId} = this
       const {elementId} = this.elementsStore[elementName]
-      await this.elementClick({sessionId, elementId})
+      await this.requests.elementClick({sessionId, elementId})
     }
     this.initStep(step)
 
@@ -82,7 +83,7 @@ class Client {
     const step = async () => {
       const {sessionId} = this
       const {elementId} = this.elementsStore[elementName]
-      await this.mouseDown({sessionId, elementId})
+      await this.requests.mouseDown({sessionId, elementId})
     }
     this.initStep(step)
 
@@ -93,7 +94,7 @@ class Client {
     const step = async () => {
       const {sessionId} = this
       const {elementId} = this.elementsStore[elementName]
-      await this.elementClear({sessionId, elementId})
+      await this.requests.elementClear({sessionId, elementId})
     }
     this.initStep(step)
     return this
@@ -103,7 +104,7 @@ class Client {
     const step = async () => {
       const {sessionId} = this
       const {elementId} = this.elementsStore[elementName]
-      await this.mouseUp({sessionId, elementId})
+      await this.requests.mouseUp({sessionId, elementId})
     }
     this.initStep(step)
 
@@ -125,7 +126,7 @@ class Client {
       }
       const {sessionId} = this
       const {elementId} = this.elementsStore[elementName]
-      await this.elementSendKeys({sessionId, elementId, text, value})
+      await this.requests.elementSendKeys({sessionId, elementId, text, value})
     }
     this.initStep(step)
 
@@ -136,7 +137,7 @@ class Client {
     const step = async () => {
       const {sessionId} = this
       const {elementId} = this.elementsStore[elementName]
-      const {value} = await this.elementText({sessionId, elementId})
+      const {value} = await this.requests.elementText({sessionId, elementId})
       this.elementsStore[elementName]['text'] = value
       if(asserter) {asserter(value)}
     }
@@ -146,7 +147,7 @@ class Client {
 
   back() {
     const step = async () => {
-      const {sessionId} = this; await this.navigateBack({sessionId})
+      const {sessionId} = this; await this.requests.navigateBack({sessionId})
     }
     this.initStep(step)
     return this
@@ -154,7 +155,7 @@ class Client {
 
   forward() {
     const step = async () => {
-      const {sessionId} = this; await this.navigateForward({sessionId})
+      const {sessionId} = this; await this.requests.navigateForward({sessionId})
     }
     this.initStep(step)
     return this
@@ -162,7 +163,7 @@ class Client {
 
   refresh() {
     const step = async () => {
-      const {sessionId} = this; await this.refresh({sessionId})
+      const {sessionId} = this; await this.requests.refresh({sessionId})
     }
     this.initStep(step)
     return this
@@ -171,7 +172,7 @@ class Client {
   url(asserter) {
     const step = async () => {
       const {sessionId} = this;
-      const {value} = await this.windowUrl({sessionId})
+      const {value} = await this.requests.windowUrl({sessionId})
       this.url = value
       if(asserter) {asserter(value)}
     }
@@ -183,7 +184,7 @@ class Client {
   title(asserter) {
     const step = async () => {
       const {sessionId} = this;
-      const {value} = await this.windowTitle({sessionId})
+      const {value} = await this.requests.windowTitle({sessionId})
       this.title = value
       if(asserter) {asserter(value)}
     }
@@ -195,7 +196,7 @@ class Client {
     const step = async () => {
       // visible is not current here
       const {sessionId} = this;
-      const {value} = await this.windowTitle({sessionId})
+      const {value} = await this.requests.windowTitle({sessionId})
       this.title = value
       if(asserter) {asserter(value)}
     }
@@ -221,7 +222,7 @@ class Client {
           const {sessionId} = this
           if(!element) {
             do {
-              const elementId = findElementIdValue(await this.getElement({sessionId, selectorObj: css}), '', false)
+              const elementId = findElementIdValue(await this.requests.getElement({sessionId, selectorObj: css}), '', false)
               if(elementId) {this.elementsStore[elementName] = {}; this.elementsStore[elementName].elementId = elementId}
               element = this.elementsStore[elementName]
             } while((await sleep(pollInterval)) && !element && +Date.now() - now < time)
@@ -229,7 +230,7 @@ class Client {
           }
           const {elementId} = this.elementsStore[elementName]
           do {
-            isVisible = await this.elementDisplayed({sessionId, elementId})
+            isVisible = await this.requests.elementDisplayed({sessionId, elementId})
           } while((await sleep(pollInterval)) && !isVisible && +Date.now() - now < time)
         }
         this.initStep(step)
