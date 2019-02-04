@@ -4,7 +4,7 @@ const {fetchy} = require('./request_interface')
 
 const resolveUrl = (baseUrl, endpointUrl) => URL.resolve(baseUrl, endpointUrl)
 
-const buildSeleniumAPI = (that, seleniumUrl) => {
+const buildSeleniumAPI = (/*that,*/ seleniumUrl) => {
   const requests = {
     createSession: ({capabilities}) => {
       return fetchy.post({url: resolveUrl(seleniumUrl, endpoins.getSession()), body: capabilities})
@@ -127,9 +127,12 @@ const buildSeleniumAPI = (that, seleniumUrl) => {
       return fetchy.post({url: resolveUrl(seleniumUrl, endpoins.parentFrame(sessionId)), body: {id: null}})
     }
   }
-  for(const key of Object.keys(requests)) {
-    that[key] = requests[key]
-  }
+
+  return requests
+
+  // for(const key of Object.keys(requests)) {
+  //   that[key] = requests[key]
+  // }
 }
 
 module.exports = {

@@ -8,6 +8,7 @@ const sleep = (ms) => new Promise(_ => setTimeout(() => _(true), ms))
 class Client {
   constructor(config) {
     const {seleniumUrl, browser} = config
+
     buildSeleniumAPI(this, seleniumUrl)
     this.capabilities = browser
     this.queue = []
@@ -33,6 +34,7 @@ class Client {
   init() {
     const step = async () => {
       const item = await this.createSession({capabilities: this.capabilities})
+      console.log('!here!!!!!!!!!!!!!!!!!!!!')
       this.sessionId = findSessionIdValue(item)
     }
     this.initStep(step)

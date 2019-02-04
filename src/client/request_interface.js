@@ -7,7 +7,7 @@ async function _fetchy(method, {slowTime = 0, timeout, url, body = undefined, he
   body = typeof body === 'object' ? JSON.stringify(body) : body
   // slowTime, if pause required before every request, default is 0
   if(slowTime) {await (() => new Promise(res => setTimeout(res, slowTime)))()}
-
+  console.log(url, method, body)
   const response = await fetch(url, {
     method,
     headers,
@@ -16,6 +16,7 @@ async function _fetchy(method, {slowTime = 0, timeout, url, body = undefined, he
   })
 
   const contentType = response.headers.get("content-type")
+
   if(contentType && contentType.includes("application/json")) {
     const body = await response.json()
     if(response.status > 300) {throw new Error('Initial test')}
