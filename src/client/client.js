@@ -34,8 +34,8 @@ class Client {
 
   init() {
     const step = async () => {
+      console.log('!here!!!!!!!!!!!!!!!!!!!!', this.capabilities)
       const item = await this.requests.createSession({capabilities: this.capabilities})
-      console.log('!here!!!!!!!!!!!!!!!!!!!!')
       this.sessionId = findSessionIdValue(item)
     }
     this.initStep(step)
@@ -252,7 +252,7 @@ class Client {
   go(url) {
     const step = async () => {
       const {sessionId} = this
-      await this.openUrl({sessionId, url})
+      await this.requests.openUrl({sessionId, url})
     }
     this.initStep(step)
     return this
