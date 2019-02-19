@@ -99,7 +99,7 @@ const buildSeleniumAPI = (/*that,*/ seleniumUrl) => {
     getElement: ({sessionId, selectorObj}) => {
       return fetchy.post({url: resolveUrl(seleniumUrl, endpoins.element(sessionId)), body: selectorObj})
     },
-    getElements: ({sessionId: selectorObj}) => {
+    getElements: ({sessionId, selectorObj}) => {
       return fetchy.post({url: resolveUrl(seleniumUrl, endpoins.elements(sessionId)), body: selectorObj})
     },
     getElementChild: ({sessionId, elementId, selectorObj}) => {
