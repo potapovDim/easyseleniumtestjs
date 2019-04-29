@@ -1,4 +1,6 @@
 const {Client} = require('../src/client')
+const assert = require('assert')
+
 
 
 const config = {
@@ -11,8 +13,6 @@ const config = {
       platform: 'ANY'
     }
   }
-  // }
-  // browsers: {
 }
 
 const client = new Client(config)
@@ -23,11 +23,14 @@ client
   .go('https://www.amazon.com/')
   .element('searchField', '#twotabsearchtextbox')
   .element('searchButton', 'input[value="Go"]')
-  .sendKeys('searchField', 'kindle')
+  .sendKeys('searchField', 'Kindle')
   .click('searchButton')
   .sleep(2500)
   .elements('electronicBooks', '.a-section.a-spacing-medium .a-link-normal.a-text-normal')
   .clickElements('electronicBooks', 1)
+  .element('productTitle', '#productTitle')
+  .getText('productTitle', (text) => assert.equal(text.includes('Kindle'), true))
+  .back()
   .saveWorkflow()
 
 
@@ -35,7 +38,7 @@ client
 async function baseUp() {
 
   await client
-    .initWorkflow('amazonSearch', {field: 'kindle'})
+    .initWorkflow('amazonSearch')
     .exec()
 }
 
