@@ -19,8 +19,9 @@ class Client {
     this.currentWorkflow
   }
 
-  initStep(step) {
+  initStep(step, ) {
     if(this.currentWorkflow) {
+      if(!this.workflows[this.currentWorkflow]) {this.workflows[this.currentWorkflow] = []}
       this.workflows[this.currentWorkflow].push(step.bind(this))
     } else {
       this.queue.push(step.bind(this))
@@ -34,7 +35,6 @@ class Client {
 
   init() {
     const step = async () => {
-      console.log('!here!!!!!!!!!!!!!!!!!!!!', this.capabilities)
       const item = await this.requests.createSession({capabilities: this.capabilities})
       this.sessionId = findSessionIdValue(item)
     }

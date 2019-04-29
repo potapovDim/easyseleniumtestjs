@@ -17,13 +17,20 @@ const config = {
 
 const client = new Client(config)
 
+client
+  .startWorkflow('amazonSearch')
+  .init()
+  .go('https://www.amazon.com/')
+  .element('searchField', '#twotabsearchtextbox')
+  .sendKeys('searchField')
+  .saveWorkflow()
+
+
 
 async function baseUp() {
+
   await client
-    .init()
-    .go('https://www.amazon.com/')
-    // .element('searchField', '#twotabsearchtextbox')
-    // .sendKeys('searchField', 'kindle')
+    .initWorkflow('amazonSearch', {field: 'kindle'})
     .exec()
 }
 
