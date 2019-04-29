@@ -68,11 +68,16 @@ class Client {
     return this
   }
 
-  elements(cssSelector) {
+  elements(elementsName, cssSelector) {
     const step = async () => {
+      const _that = this
       const css = {using: 'css selector', value: cssSelector}
       const {sessionId} = this
-      await this.requests.getElements({sessionId, selectorObj: css})
+      const {value} = await this.requests.getElements({sessionId, selectorObj: css})
+      this.elementsStore[elementsName] = []
+      value.forEach(function(item) {
+        _that.elementsStore[elementsName].push({elementId: findElementIdValue(item)})
+      })
     }
     this._initStep(step)
     return this
@@ -89,12 +94,17 @@ class Client {
     return this
   }
 
-  clickElements(elementsName, index) {
+  clickElements(elementsName, index = 0) {
+    if(!elementsName) {
+      throw new Error('elementsName is required')
+    }
     const step = async () => {
       const {sessionId} = this
-      const {elementId} = this.elementsStore[elementName]
+      const {elementId} = this.elementsStore[elementsName][index]
       await this.requests.elementClick({sessionId, elementId})
     }
+    this._initStep(step)
+    return this
   }
 
   mouseDown(elementName) {
