@@ -7,7 +7,7 @@ const config = {
   seleniumUrl: 'http://localhost:4444/wd/hub/',
   browser: {
     desiredCapabilities: {
-      browserName: 'chrome',
+      browserName: 'firefox',
       javascriptEnabled: true,
       acceptSslCerts: true,
       platform: 'ANY'
