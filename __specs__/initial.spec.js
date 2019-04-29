@@ -22,7 +22,11 @@ client
   .init()
   .go('https://www.amazon.com/')
   .element('searchField', '#twotabsearchtextbox')
-  .sendKeys('searchField')
+  .element('searchButton', 'input[value="Go"]')
+  .elements('electronicBooks', '.a-section.a-spacing-medium')
+  .sendKeys('searchField', 'kindle')
+  .clickElements('electronicBooks', 1)
+  .click('searchButton')
   .saveWorkflow()
 
 

@@ -19,7 +19,7 @@ class Client {
     this.currentWorkflow
   }
 
-  initStep(step, ) {
+  _initStep(step) {
     if(this.currentWorkflow) {
       if(!this.workflows[this.currentWorkflow]) {this.workflows[this.currentWorkflow] = []}
       this.workflows[this.currentWorkflow].push(step.bind(this))
@@ -38,7 +38,7 @@ class Client {
       const item = await this.requests.createSession({capabilities: this.capabilities})
       this.sessionId = findSessionIdValue(item)
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -46,13 +46,13 @@ class Client {
     const step = async () => {
       const {sessionId} = this; await this.requests.closeSession({sessionId})
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
   sleep(time = 5000) {
     const step = async () => sleep(time)
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -63,8 +63,18 @@ class Client {
       const item = await this.requests.getElement({sessionId, selectorObj: css})
       this.elementsStore[elementName] = {}; this.elementsStore[elementName]['elementId'] = findElementIdValue(item)
     }
-    this.initStep(step)
+    this._initStep(step)
 
+    return this
+  }
+
+  elements(cssSelector) {
+    const step = async () => {
+      const css = {using: 'css selector', value: cssSelector}
+      const {sessionId} = this
+      await this.requests.getElements({sessionId, selectorObj: css})
+    }
+    this._initStep(step)
     return this
   }
 
@@ -74,9 +84,17 @@ class Client {
       const {elementId} = this.elementsStore[elementName]
       await this.requests.elementClick({sessionId, elementId})
     }
-    this.initStep(step)
+    this._initStep(step)
 
     return this
+  }
+
+  clickElements(elementsName, index) {
+    const step = async () => {
+      const {sessionId} = this
+      const {elementId} = this.elementsStore[elementName]
+      await this.requests.elementClick({sessionId, elementId})
+    }
   }
 
   mouseDown(elementName) {
@@ -85,7 +103,7 @@ class Client {
       const {elementId} = this.elementsStore[elementName]
       await this.requests.mouseDown({sessionId, elementId})
     }
-    this.initStep(step)
+    this._initStep(step)
 
     return this
   }
@@ -96,7 +114,7 @@ class Client {
       const {elementId} = this.elementsStore[elementName]
       await this.requests.elementClear({sessionId, elementId})
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -106,29 +124,34 @@ class Client {
       const {elementId} = this.elementsStore[elementName]
       await this.requests.mouseUp({sessionId, elementId})
     }
-    this.initStep(step)
+    this._initStep(step)
 
     return this
   }
 
-  sendKeys(elementName, value) {
+  /**
+   *
+   * @param {string} elementName
+   * @param {string} value, default is ''
+   */
+  sendKeys(elementName, value = '') {
+    if(!elementName) {
+      throw new Error('elementName is required')
+    }
     const step = async () => {
       let text = ''
       if(assertNumber(value)) {
-        text = value.toString()
         value = value.toString().split('')
       } else if(!assertArray(value)) {
-        text = value
         value = value.split('')
       } else {
-        text = value.join('')
         value = value
       }
       const {sessionId} = this
       const {elementId} = this.elementsStore[elementName]
       await this.requests.elementSendKeys({sessionId, elementId, text, value})
     }
-    this.initStep(step)
+    this._initStep(step)
 
     return this
   }
@@ -141,7 +164,7 @@ class Client {
       this.elementsStore[elementName]['text'] = value
       if(asserter) {asserter(value)}
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -149,7 +172,7 @@ class Client {
     const step = async () => {
       const {sessionId} = this; await this.requests.navigateBack({sessionId})
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -157,7 +180,7 @@ class Client {
     const step = async () => {
       const {sessionId} = this; await this.requests.navigateForward({sessionId})
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -165,7 +188,7 @@ class Client {
     const step = async () => {
       const {sessionId} = this; await this.requests.refresh({sessionId})
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -176,7 +199,7 @@ class Client {
       this.url = value
       if(asserter) {asserter(value)}
     }
-    this.initStep(step)
+    this._initStep(step)
 
     return this
   }
@@ -188,7 +211,7 @@ class Client {
       this.title = value
       if(asserter) {asserter(value)}
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -200,7 +223,7 @@ class Client {
       this.title = value
       if(asserter) {asserter(value)}
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -233,7 +256,7 @@ class Client {
             isVisible = await this.requests.elementDisplayed({sessionId, elementId})
           } while((await sleep(pollInterval)) && !isVisible && +Date.now() - now < time)
         }
-        this.initStep(step)
+        this._initStep(step)
         return this
 
       },
@@ -254,7 +277,7 @@ class Client {
       const {sessionId} = this
       await this.requests.openUrl({sessionId, url})
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -278,7 +301,7 @@ class Client {
     const step = async () => {
       const {sessionId} = this; await this.requests.aceptAlert({sessionId})
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -286,7 +309,7 @@ class Client {
     const step = async () => {
       const {sessionId} = this; await this.requests.setTextAlert({sessionId})
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -294,7 +317,7 @@ class Client {
     const step = async () => {
       const {sessionId} = this; await this.requests.getTextAlert({sessionId})
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -302,7 +325,7 @@ class Client {
     const step = async () => {
       const {sessionId} = this; await this.requests.dismissAlert({sessionId})
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -310,7 +333,7 @@ class Client {
     const step = async () => {
       const {sessionId} = this; await this.requests.windowCloseCurrent({sessionId})
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -318,7 +341,7 @@ class Client {
     const step = async () => {
       const {sessionId} = this; await this.requests.windowSize({sessionId})
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -326,7 +349,7 @@ class Client {
     const step = async () => {
       const {sessionId} = this; await this.requests.windowHandles({sessionId})
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -334,7 +357,7 @@ class Client {
     const step = async () => {
       const {sessionId} = this; await this.requests.windowHandle({sessionId})
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -342,7 +365,7 @@ class Client {
     const step = async () => {
       const {sessionId} = this; await this.requests.screenshot({sessionId})
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -353,7 +376,7 @@ class Client {
       const nameHandle = windows.value[windowIndex]
       await this.requests.openWindow({sessionId, nameHandle})
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -361,7 +384,7 @@ class Client {
     const step = async () => {
       const {sessionId} = this; await this.requests.mouseClick({sessionId})
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -371,7 +394,7 @@ class Client {
       const {elementId} = this.elementsStore[elementName]
       await this.requests.elementTagName({sessionId, elementId})
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -381,7 +404,7 @@ class Client {
       const {elementId} = this.elementsStore[elementName]
       await this.requests.submit({sessionId, elementId})
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -391,7 +414,7 @@ class Client {
       const {elementId} = this.elementsStore[elementName]
       await this.requests.elementDblClick({sessionId, elementId})
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -401,7 +424,7 @@ class Client {
       const {elementId} = this.elementsStore[elementName]
       await this.requests.elementDisplayed({sessionId, elementId})
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -411,17 +434,7 @@ class Client {
       const {elementId} = this.elementsStore[elementName]
       await this.requests.elementEnabled({sessionId, elementId})
     }
-    this.initStep(step)
-    return this
-  }
-
-  getElements(cssSelector) {
-    const step = async () => {
-      const css = {using: 'css selector', value: cssSelector}
-      const {sessionId} = this
-      await this.requests.getElements({sessionId, selectorObj: css})
-    }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -433,7 +446,7 @@ class Client {
       const item = await this.requests.getElementChild({sessionId, elementId, selectorObj: css})
       this.elementsStore[elementName] = {}; this.elementsStore[elementName]['elementId'] = findElementIdValue(item)
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -443,7 +456,7 @@ class Client {
       const {sessionId} = this
       await this.requests.getElementChildren({sessionId, elementId, selectorObj: css})
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -453,7 +466,7 @@ class Client {
       const {elementId} = this.elementsStore[elementName]
       await this.requests.getElementAttribute({sessionId, elementId, attribute})
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -462,7 +475,7 @@ class Client {
       const {sessionId} = this
       await this.requests.executeScript({sessionId, script, ...args})
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -471,7 +484,7 @@ class Client {
       const {sessionId} = this
       await this.requests.executeScriptAsync({sessionId, script, ...args})
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -480,7 +493,7 @@ class Client {
       const {sessionId} = this
       await this.requests.pressKey({sessionId, key})
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -489,7 +502,7 @@ class Client {
       const {sessionId} = this
       await this.requests.frame({sessionId, id})
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
@@ -498,7 +511,7 @@ class Client {
       const {sessionId} = this
       await this.requests.frameParent({sessionId})
     }
-    this.initStep(step)
+    this._initStep(step)
     return this
   }
 
