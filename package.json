@@ -20,6 +20,7 @@
     "node-fetch": "^2.2.1"
   },
   "devDependencies": {
+    "faker": "^4.1.0",
     "selenium-standalone": "^6.16.0",
     "webdriver-manager": "^12.1.1"
   }

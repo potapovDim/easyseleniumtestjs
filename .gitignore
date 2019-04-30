@@ -4,3 +4,4 @@ package-lock.json
 temp.js
 test_specs
 flows
+__specs__/m.spec.js

@@ -68,6 +68,28 @@ class Client {
     return this
   }
 
+  elementByText(elementName, selector, text) {
+    const step = async () => {
+      const script = `
+        function getElementByText() {
+          const elements = document.querySelectorAll('${selector}')
+          for(var i = 0; i< elements.length;i++) {
+            var currentElement = elements[i]
+            var text = currentElement.innerText ? currentElement.innerText : currentElement.textContent
+            if(text === '${text}') {return currentElement}
+          }
+          throw new Error('Element was not found, selector: "${selector}", text: "${text}"')
+        }
+      `
+      const {sessionId} = this
+      const item = await this.requests.executeScript({sessionId, selectorObj: css})
+      this.elementsStore[elementName] = {}; this.elementsStore[elementName]['elementId'] = findElementIdValue(item)
+    }
+    this._initStep(step)
+
+    return this
+  }
+
   elements(elementsName, cssSelector) {
     const step = async () => {
       const _that = this
@@ -240,6 +262,10 @@ class Client {
   startWorkflow(workflowName) {
     this.currentWorkflow = workflowName
     return this
+  }
+
+  removeWorkflow() {
+
   }
 
   wait(time, pollInterval = 200) {
