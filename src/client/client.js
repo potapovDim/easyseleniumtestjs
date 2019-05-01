@@ -281,7 +281,7 @@ class Client {
           const {sessionId} = this
           if(!element) {
             do {
-              const elementId = findElementIdValue(await this.requests.getElement({sessionId, selectorObj: css}), '', false)
+              const elementId = findElementIdValue(await this.requests.getElement({sessionId, selectorObj: css}).catch(_ => ({})), '', false)
               if(elementId) {this.elementsStore[elementName] = {}; this.elementsStore[elementName].elementId = elementId}
               element = this.elementsStore[elementName]
             } while((await sleep(pollInterval)) && !element && +Date.now() - now < time)
@@ -329,6 +329,9 @@ class Client {
   }
 
   initWorkflow(workflowName) {
+    if(!this.workflows[workflowName]) {
+      throw new Error(`Workflow with name: ${workflowName} was not found`)
+    }
     this.queue.push(...this.workflows[workflowName])
     return this
   }

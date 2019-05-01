@@ -34,7 +34,9 @@ function findElementIdValue(responseObj, currentId = '', throwErr = true) {
   if(elementId.length) {
     return elementId
   }
-  throw new Error('Element id was not found')
+  if(throwErr) {
+    throw new Error('Element id was not found')
+  }
 }
 
 module.exports = {
